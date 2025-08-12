@@ -11,15 +11,16 @@
 # Clearing work space
 rm(list = ls())
 
-# adding renv library paths to .libPaths()
-renv_lib_paths <- readLines("../../renv_library_paths.txt")
-.libPaths(c(.libPaths(), renv_lib_paths))
-
-# if (rstudioapi::isAvailable()) {
-#   message("running in RStudio: current directory set as working directory")
-#   currentPath = rstudioapi::getActiveDocumentContext()$path
-#   setwd(dirname(currentPath))
-# }
+if (interactive()) {
+  message("running in RStudio")
+  currentPath = rstudioapi::getActiveDocumentContext()$path
+  setwd(dirname(currentPath))
+} else {
+  # adding renv library paths to .libPaths()
+  message("Executing from command line terminal")
+  renv_lib_paths <- readLines("../../renv_library_paths.txt")
+  .libPaths(c(renv_lib_paths, .libPaths()))
+}
 
 
 # Paths to different processing folders for better accessibility

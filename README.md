@@ -50,7 +50,7 @@ This directory enlists the software environment specifications used for various 
 
 * **5\_Post\_analysis\_work**: The directory comprises scripts to generate the final resulting plots in the project; a few plots are included in the manuscript's main text, while others were included in the supplementary information.
 
-* **Data** (only available in sFSS, not on GitHub): Comprised of pre-processed data downloaded from a public data-sharing platform. One of the datasets is procured from the group of Lisa van Baarsen and is available on GEO as well with GEO accession ID - ####. 
+* **Data** (only available in sFSS, not on GitHub): Comprised of pre-processed data downloaded from a public data-sharing platform. One of the datasets is procured from the group of Lisa van Baarsen and is available on GEO as well with GEO accession ID - GSE261747. 
 * **renv**: The project uses the renv functionality and the directory comprises the essential files (activate.R, settings.json) and directories for the renv setup.
 
 * **Renv_setup.R**: This script sets up the R environment for the project work. Details about executing are available in the file as a header and in the comments. Also included under the 'How to reproduce the results' section further down in this document.<br>

@@ -64,7 +64,7 @@ for (g in 1:2) {
     # dim(gene.exp.celltype)
     
     for (j in 1:length(cellnames)) {
-      # collect the assay data from data slot in integrated assay for each sample
+      # collect the assay data from data slot from the assay for each sample
       gene.exp.celltype[, j] <-
         as.vector(GetAssayData(
           object = sc.combined4,
@@ -105,6 +105,10 @@ corr.plots <- lapply(1:2, function(pll) {
     geom_tile(data = subset(heatmap.corr.mat, diagonal == "diagonal"), fill = "gray40", color = "white") +
     scale_fill_gradient(low = "white", high = "deepskyblue4") +
     theme(
+      legend.title = element_text(size = 6, color = "dodgerblue4"),
+      legend.text = element_text(size = 5),
+      legend.key.size = unit(0.5, "cm"),
+      legend.box.margin = margin(2, 2, 2, 2),
       plot.title = element_text(size = 8, hjust = 0, color = "dodgerblue4"),
       panel.background = element_rect(fill = "white"),
       axis.text.x = element_text(size = 6.5, color = "black", angle = 45, hjust = 1, vjust = 1),
@@ -114,8 +118,8 @@ corr.plots <- lapply(1:2, function(pll) {
       panel.grid.minor = element_blank(),
       panel.grid.major = element_line(colour = "grey100", linewidth = 0.1)
     ) +
-    NoLegend() +
-    # ggtitle(plot_title) +
+    labs(fill = " Correlation") + 
+    guides(color = guide_legend(override.aes = list(size = 5))) +
     scale_x_discrete(labels = c("Adipocytes" = "Adipocytes",
                                 "B-cells" = "B",
                                 "CD4+ T-cells" = "CD4 T",
@@ -147,12 +151,12 @@ corr.plots <- lapply(1:2, function(pll) {
 
 
 png(file = paste0(Results, "Fig_Celltype_corr_integrated_assay.png"),
-    res = 450, width = 4.2, height = 3.6, units = "in")
+    res = 450, width = 4.8, height = 3.6, units = "in")
 plot_grid(corr.plots[[2]], nrow = 1, label_size = 12)
 dev.off()
 
 png(file = paste0(Results, "Fig_Celltype_corr_rna_assay.png"),
-    res = 450, width = 4.2, height = 3.6, units = "in")
+    res = 450, width = 4.8, height = 3.6, units = "in")
 plot_grid(corr.plots[[1]], nrow = 1, label_size = 12)
 dev.off()
 

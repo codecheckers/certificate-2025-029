@@ -172,10 +172,10 @@ rmse.other <- lapply(1:1, function(m) {
 })
 
 
-# png(file = paste0(Results, "Fig_removal_scenario_st_", st_num, ".png"),
-#     res = 450, width = 9.6, height = 6, units = "in")
-# print(plot_grid(jsd.other[[1]], rmse.other[[1]], ncol = 1, rel_heights = c(.7, .9)))
-# dev.off()
+png(file = paste0(Results, "Fig_removal_scenario_st_", st_num, ".png"),
+    res = 450, width = 9.6, height = 6, units = "in")
+print(plot_grid(jsd.other[[1]], rmse.other[[1]], ncol = 1, rel_heights = c(.7, .9)))
+dev.off()
 
 
 
@@ -211,31 +211,38 @@ delta.jsd.median %>%
   mutate(value=ifelse(variable == "CARD" & scene ==6, NA, value)) ->
   delta.jsd.median
 
+# Map scenes to actual x-axis values
+scene_map <- c(1, 2, 3, 5, 10, 11)
+delta.jsd.median$x <- scene_map[delta.jsd.median$scene]
+
+# Pad all variables with missing x values
+full_grid <- expand.grid(x = 1:11, variable = unique(delta.jsd.median$variable))
+delta.full <- left_join(full_grid, delta.jsd.median, by = c("x", "variable"))
+
 # custom ordering method name in the facets
-delta.jsd.median$variable <- factor(delta.rmse.median$variable, levels = cust_methods)
+delta.full$variable <- factor(delta.full$variable, levels = cust_methods)
 
 # Plot the delta JSD median values and add a regression line
-gg1 <- ggplot(delta.jsd.median, aes(scene, value, colour=variable)) +
-  geom_point()  + 
-  geom_smooth(aes(scene, value, colour=variable), method=lm, se=FALSE) +
-  facet_wrap(~ variable, nrow = 1, scales="free_x") +
-  labs(x = "", y = expression(Delta*"JSD (median)")) + 
-  scale_x_continuous(
-    breaks = c(1, 2, 3, 4, 5, 6),  # Customize breaks
-    labels = c("1", "2", "3", "5", "10", "11")  # Custom labels
-  ) +
+gg1 <- ggplot(delta.full, aes(x = x, y = value, colour = variable)) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth(method = "lm", se = FALSE, na.rm = TRUE, linewidth = .5) +
+  facet_wrap(~ variable, nrow = 1, scales = "free_x") +
+  scale_x_continuous(breaks = 1:11, labels = as.character(1:11)) +
+  labs(x = "", y = expression(Delta*"JSD (median)")) +
   theme(
     legend.position = "none",
     legend.key.size = unit(0.5, "cm"),
     strip.text = element_text(size = 11, color = "dodgerblue2"),
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
     panel.grid.minor = element_blank(),
-    axis.text.x = element_text(size = 9, color = "black", vjust = 1),
+    axis.text.x = element_text(size = 7, color = "black", vjust = 1),
     axis.text.y = element_text(size = 10, color = "black", hjust = 1),
+    # axis.title.x = element_text(size = 12, angle = 0, vjust = 0.5, color = "dodgerblue4"),
     axis.title.y = element_text(size = 12, angle = 90, vjust = 0.5, color = "dodgerblue4"),
     panel.background = element_rect(fill = "white"),
-    panel.grid.major = element_line(colour = "grey70", linewidth = 0.1)
+    panel.grid.major = element_line(colour = "grey90", linewidth = 0.1)
   )
+
 
 # Calculate median values for the delta RMSE per combination of 
 # mismatch scenario and deconvolution method
@@ -258,34 +265,39 @@ delta.rmse.median %>%
   mutate(value=ifelse(variable == "CARD" & scene ==6, NA, value)) ->
   delta.rmse.median
 
-# custom ordering method name in the facets
-delta.rmse.median$variable <- factor(delta.rmse.median$variable, levels = cust_methods)
+# Map scenes to actual x-axis values
+scene_map <- c(1, 2, 3, 5, 10, 11)
+delta.rmse.median$x <- scene_map[delta.rmse.median$scene]
 
-# Plot the delta RMSE median values and add a regression line
-gg2 <- ggplot(delta.rmse.median, aes(scene, value, colour=variable)) +
-  geom_point()  + 
-  geom_smooth(aes(scene, value, colour=variable), method=lm, se=FALSE) +
-  facet_wrap(~ variable, nrow = 1, scales="free_x") +
-  labs(x = "# missing cell types", y = expression(Delta*"RMSE (median)")) + 
-  scale_x_continuous(
-    breaks = c(1, 2, 3, 4, 5, 6),  # Customize breaks
-    labels = c("1", "2", "3", "5", "10", "11")  # Custom labels
-  ) +
+# Pad all variables with missing x values
+full_grid <- expand.grid(x = 1:11, variable = unique(delta.rmse.median$variable))
+delta.full <- left_join(full_grid, delta.rmse.median, by = c("x", "variable"))
+
+# custom ordering method name in the facets
+delta.full$variable <- factor(delta.full$variable, levels = cust_methods)
+
+# Plot the delta JSD median values and add a regression line
+gg2 <- ggplot(delta.full, aes(x = x, y = value, colour = variable)) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth(method = "lm", se = FALSE, na.rm = TRUE, linewidth = .5) +
+  facet_wrap(~ variable, nrow = 1, scales = "free_x") +
+  scale_x_continuous(breaks = 1:11, labels = as.character(1:11)) +
+  labs(x = "# missing cell types", y = expression(Delta*"RMSE (median)")) +
   theme(
     legend.position = "none",
     legend.key.size = unit(0.5, "cm"),
     strip.text = element_text(size = 11, color = "dodgerblue2"),
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
     panel.grid.minor = element_blank(),
-    axis.text.x = element_text(size = 9, color = "black", vjust = 1),
+    axis.text.x = element_text(size = 7, color = "black", vjust = 1),
     axis.text.y = element_text(size = 10, color = "black", hjust = 1),
-    axis.title.x = element_text(size = 12, vjust = 0.5, color = "dodgerblue4"),
+    axis.title.x = element_text(size = 12, angle = 0, vjust = 0.5, color = "dodgerblue4"),
     axis.title.y = element_text(size = 12, angle = 90, vjust = 0.5, color = "dodgerblue4"),
     panel.background = element_rect(fill = "white"),
-    panel.grid.major = element_line(colour = "grey70", linewidth = 0.1)
+    panel.grid.major = element_line(colour = "grey90", linewidth = 0.1)
   )
 
 png(file = paste0(Results, "delta_median_st_", st_num, ".png"),
-    res = 450, width = 9.6, height = 6, units = "in")
+    res = 450, width = 10.8, height = 4.8, units = "in")
 print(gg1 + gg2 + patchwork::plot_layout(nrow = 2))
 dev.off()
