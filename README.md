@@ -1,4 +1,8 @@
-# Systematic evaluation of robustness to cell type mismatch of deconvolution methods for spatial transcriptomics data
+# CODECHECK Repository
+
+This is the CODECHECK repository for the publication: [Systematic evaluation of robustness to cell type mismatch of deconvolution methods for spatial transcriptomics data](https://www.biorxiv.org/content/10.1101/2025.08.12.669903v1). It is forked from author's repository associated with the publication.
+
+The reproduced figures can be found in the codecheck/outputs directory.
 
 ## Table of contents
 
