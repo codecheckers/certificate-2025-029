@@ -1,0 +1,201 @@
+---
+output:
+  pdf_document:
+    toc: false
+    includes:
+       in_header: codecheck-preamble.sty
+    latex_engine: xelatex
+---
+
+```{r rsetup,eval=TRUE,include=FALSE}
+require("codecheck")
+require("knitr")
+require("rprojroot")
+require("yaml")
+require("xtable")
+require("tibble")
+require("readr")
+options(width = 60)
+opts_chunk$set(cache = FALSE)
+
+root <- find_root("codecheck.yml")
+```
+
+```{r codecheck_logo, echo=FALSE,results='asis'}
+latex_codecheck_logo()
+```
+
+```{r manifest, eval=TRUE, include=FALSE}
+metadata <- codecheck_metadata(root)
+manifest <- metadata$manifest
+
+dest_dir <- file.path(root, "codecheck", "outputs")
+## Create the outputs directory if missing
+if (!dir.exists(dest_dir) ) {
+  dir.create(dest_dir)
+}
+
+manifest_df <- copy_manifest_files(root, metadata,
+                                  dest_dir, keep_full_path = FALSE,
+                                  overwrite = FALSE
+                                  )
+# manifest_df <- list_manifest_files(root, metadata, dest_dir)
+```
+
+---
+title: `r paste("CODECHECK certificate", metadata$certificate)`
+subtitle: `r codecheck:::as_latex_url(metadata$report)`
+---
+
+```{r summary_metadata, echo=FALSE, results='asis'}
+latex_summary_of_metadata(metadata)
+```
+
+```{r summary_manifest, echo=FALSE, results='asis'}
+latex_summary_of_manifest(metadata, manifest_df, root)
+```
+
+# Summary
+
+This project was challenging to reproduce. Although the key requirements were clearly described, 
+the analysis was both computationally intensive and time-consuming due to its scale and complexity. 
+The authors provided a well-structured repository with accompanying environment files (`renv.lock` and `environment.yml`) 
+to support reproducibility. After resolving several environment and dependency issues, the full pipeline 
+was executed successfully, and all main figures from the manuscript were reproduced.
+
+Overall, the CODECHECK was successful.
+
+\clearpage
+
+# CODECHECKER notes
+
+The GitHub repository [EDS-Bioinformatics-Laboratory/Robustness_evaluation_deconv_methods](https://github.com/EDS-Bioinformatics-Laboratory/Robustness_evaluation_deconv_methods) contains the analysis code, written in R and Python.
+
+## Codecheck Procedure
+
+- The analysis was run on a high-performance myDRE environment equipped with 128 GB of RAM and an NVIDIA T4 Tesla GPU.
+- The GitHub repository was cloned into this environment.
+- A Conda environment was created using the included `environment.yml` file.
+- The R environment was set up via the provided `Renv_setup.R` script, which relied on an `renv.lock` file.
+- Environment errors were encountered due to inaccessible Bioconductor mirrors. These were resolved by specifying alternative, accessible mirrors.
+- The six analysis modules were executed sequentially; no overarching script was provided to run all modules in a single step.
+- After successful execution of the modules, the figures were generated as described in the repository.
+
+## Setup Notes
+
+- The environment was based on R 4.2.1, Bioconductor 3.14, and Python 3.9 (via Conda).
+- Additional system libraries were installed manually to address package installation and runtime errors.
+- All work was conducted within myDRE, a restricted research environment.
+- X11 rendering issues were resolved by installing `xfonts-75dpi` and registering fonts via xset.
+
+## Issues Encountered
+
+- **High computational demand**: The full CODECHECK required over 40 hours to complete, partly due to bug fixing but mainly because of the computational complexity and high resource requirements of the analysis.
+- **System dependencies**: Several R packages required external libraries (`liblapack3`, `libudunits2-dev`, `xfonts-75dpi`) that were neither listed nor installed automatically.
+- **X11 font rendering**: R grid graphics failed due to missing bitmap fonts (e.g., `-adobe-helvetica-...`). Installing the X11 font set and registering it via xset resolved this.
+- **Bioconductor mirror failures**: Within myDRE, Bioconductor redirected some package requests to a broken mirror (`mghp.osn.xsede.org`), blocking access to archived versions such as `S4Vectors 0.32.3`. Switching to the Göttingen mirror resolved the issue but highlights the fragility of older Bioconductor versions in restricted environments.
+- **JAX GPU failure**: Although GPU support was available, JAX v0.4.6 was incompatible with its CUDA plugin v0.4.23, causing all JAX computations to fall back to the CPU.
+- **Error handling**: Several pipeline components failed silently or produced ambiguous warnings. The use of `nohup` further limited feedback on execution progress.
+- **Manual code edits**: To reduce memory usage, some for-loops had to be manually modified to restrict analysis scope. Such edits are not ideal in a CODECHECK context, where the code should run unmodified.
+
+**Total runtime**: approximately 2 400 minutes (≈ 40 hours) on a large workstation.
+
+# Recommendations
+
+For future publications or workflow releases, the following improvements are recommended:
+
+- **Provide a lightweight “test mode."**: Include a reduced version of the pipeline that runs faster and uses fewer computational resources. This would enable others to perform reproducibility checks more efficiently.
+- **Make the pipeline resource-aware**: Implement automatic detection of available system resources (e.g., memory and CPU cores) and adjust workload or parallelism dynamically to prevent overconsumption or failure on smaller systems.
+- **Document system-level dependencies**: Explicitly list and describe required system libraries and fonts (e.g., `libudunits2-dev`, `liblapack3`, `xfonts-75dpi`) in the setup instructions to facilitate smooth environment setup.
+- **Modernize the R/Bioconductor environment**: Consider updating to a more recent R and Bioconductor version to reduce dependency on older mirrors and improve long-term reproducibility.
+
+
+(document here if any of the suggestions were taken up by the authors in the meantime - do not remove any, keep track of contributions via feedback)
+
+\clearpage
+
+# Manifest files
+
+```{r, echo=FALSE, results="asis", width=100}
+for (i in c(1:nrow(manifest_df))) {
+  path <- manifest_df[i, "dest"]
+  if(stringr::str_ends(path, "(png|pdf|jpg|jpeg)")) {
+    # include graphics with knitr has to happen at top level in chunks, see https://github.com/yihui/knitr/issues/1260
+    # see also https://stackoverflow.com/questions/51268623/insert-images-using-knitrinclude-graphics-in-a-for-loop
+    # knitr::include_graphics(manifest_df[1, "dest"], error = TRUE)
+    # Therefore, generate Markdown code here:
+    cat("## ", basename(path), "\n\n")
+    cat("**Comment:** ", manifest_df[i,"comment"], "\n\n")
+    cat(paste0("![", manifest_df[i,"comment"], "](", path, ")\n"))
+  } else if (stringr::str_ends(path, "(Rout|txt)")) {
+    cat("## ", basename(path), "\n\n")
+    cat("\\scriptsize \n\n", "```txt\n")
+    cat(readLines(path), sep = "\n")
+    cat("\n\n``` \n\n", "\\normalsize \n\n")
+  } else if (stringr::str_ends(path, "csv")) {
+    cat("## ", basename(path), "\n\n", "Summary statistics of tabular data:", "\n\n")
+    cat("\\scriptsize \n\n", "```txt\n")
+    print(skimr::skim(read.csv(path)))
+    cat("\n\n``` \n\n", "\\normalsize \n\n")
+  } else if (stringr::str_ends(path, "(xls|xlsx)")) {
+    cat("## ", basename(path), "\n\n", "Partial content of tabular data:", "\n\n")
+    cat("\\scriptsize \n\n", "```txt\n")
+    print(readxl::read_excel(path))
+    cat("\n\n``` \n\n", "\\normalsize \n\n")
+  } else if (stringr::str_ends(path, "(htm|html)")) {
+    if(Sys.which("wkhtmltopdf") != "") {
+      cat("## ", basename(path), "\n\n", "Content of HTML file (starts on next page):", "\n\n")
+      out_file <- paste0(path, ".pdf")
+      system2("wkhtmltopdf", c(shQuote(path), shQuote(out_file)))
+      cat(paste0("\\includepdf[pages={-}]{", out_file, "}"))
+      cat("\n\n End of ", basename(path), "on previous page.", "\n\n")
+    } else {
+      cat("## ", basename(path), "\n\n")
+      cat("Cannot inlcude output file as figure.")
+    }
+  } else {
+    cat("## ", basename(path), "\n\n")
+    cat("Cannot inlcude output file as figure.")
+  }
+  
+  cat("\\clearpage \n\n")
+}
+```
+
+\clearpage
+
+## Acknowledgements
+
+This CODECHECK was performed as part of an independent reproducibility review at Amsterdam UMC. 
+The codechecker thanks the authors for making the code and data publicly available.
+
+# Citing this document
+
+```{r, results='asis',echo=FALSE}
+cite_certificate(metadata)
+```
+
+# About CODECHECK
+
+This certificate confirms that the codechecker could independently
+reproduce the results of a computational analysis given the data and
+code from a third party.  A CODECHECK does not check whether the
+original computation analysis is correct.  However, as all materials
+required for the reproduction are freely available by following the
+links in this document, the reader can then study for themselves the
+code and data.
+
+
+# About this document
+
+This document was created using [R Markdown](https://rmarkdown.rstudio.com/) using the [`codecheck`](https://github.com/codecheckers/codecheck) R package.
+`make codecheck.pdf` will regenerate the report file.
+
+```{r}
+sessionInfo()
+```
+
+```{r, include=FALSE, eval=FALSE}
+# render this document in RStudio
+rmarkdown::render("codecheck.Rmd", output_format = "pdf_document") 
+```

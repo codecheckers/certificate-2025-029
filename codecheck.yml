@@ -1,0 +1,45 @@
+---
+version: https://codecheck.org.uk/spec/config/1.0
+
+paper:
+  title: >
+    Systematic evaluation of robustness to cell type mismatch of deconvolution methods for spatial transcriptomics data
+  authors:
+    - name: Utkarsh M. Mahamune
+      ORCID: 0000-0002-0517-0346
+    - name: Aldo Jongejan
+      ORCID: 0000-0002-8948-2549
+    - name: Antoine van Kampen
+      ORCID: 0000-0003-1025-7232
+    - name: Lisa van Baarsen
+      ORCID: 0000-0003-3346-8921
+    - name: Perry Moerland
+      ORCID: 0000-0002-2357-3659
+  reference: https://www.biorxiv.org/content/10.1101/2025.08.12.669903v1
+
+manifest:
+  - file: Results_figures/Figure_2.png
+    comment: manuscript Figure 2
+  - file: Results_figures/Figure_3.png
+    comment: manuscript Figure 3
+  - file: Results_figures/Figure_4a.png
+    comment: manuscript Figure 4a
+  - file: Results_figures/Figure_4b.png
+    comment: manuscript Figure 4b
+  - file: Results_figures/Figure_5.png
+    comment: manuscript Figure 5
+
+codechecker:
+  - name: Bauke van der Velde
+    ORCID: 0000-0002-0365-3862
+  - name: Merel Postema
+    ORCID: 0000-0002-1536-7062
+
+summary: >
+  R and Python code by EDS Bioinformatics Laboratory at Amsterdam UMC; 
+  all manuscript figures successfully reproduced on myDRE
+
+repository: https://github.com/EDS-Bioinformatics-Laboratory/Robustness_evaluation_deconv_methods
+check_time: "2025-07-13 10:00:00"
+certificate: 2025-029
+report: https://doi.org/10.5281/zenodo.17524536
